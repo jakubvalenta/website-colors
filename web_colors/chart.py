@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def read_chart_data(f: IO) -> pd.DataFrame:
-    return pd.read_csv(f, index='date')
+    return pd.read_csv(f, index_col='date')
 
 
 def write_chart_data(snapshot_dfs: Iterable[pd.DataFrame], f: IO):
