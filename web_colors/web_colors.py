@@ -51,11 +51,10 @@ def analyze_image(f_in: IO, bg_color: RGB = (255, 255, 255)) -> pd.Series:
 def create_chart(base_url: str, auth_token: str, title: str, data: pd.Series):
     props = {
         'title': title,
-        'type': 'd3-pies',
+        'type': 'd3-area',
         'metadata': {
             'visualize': {
-                'custom-colors': {color: color for color in data.index},
-                'group': {'num_slices': 50},
+                'custom-colors': {color: color for color in data.columns}
             },
         },
     }
