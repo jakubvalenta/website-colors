@@ -1,15 +1,15 @@
 _python_pkg = web_colors
 _executable = web-colors
-websites := example.com google.com
+websites := google.com
 data_dir := data
 website_dirs := $(addprefix $(data_dir)/,$(websites))
 date_start := 2018-01-01
 date_end := 2020-01-01
 every_months := 12
-snapshot_dirs := $(wildcard $(data_dir)/*/*)
-url_paths := $(addsuffix /url.txt,$(snapshot_dirs))
-screenshot_paths := $(addsuffix /screenshot.png,$(snapshot_dirs))
-csv_paths := $(addsuffix /colors.csv,$(snapshot_dirs))
+snapshot_dirs := $(wildcard $(data_dir)/*/*/)
+url_paths := $(addsuffix url.txt,$(snapshot_dirs))
+screenshot_paths := $(addsuffix screenshot.png,$(snapshot_dirs))
+csv_paths := $(addsuffix colors.csv,$(snapshot_dirs))
 chart_paths := $(addsuffix /chart.csv,$(website_dirs))
 
 .PHONY: find-snapshots screenshot analyze join chart setup setup-dev test lint tox reformat help
@@ -31,12 +31,15 @@ $(data_dir)/%/screenshot.png: $(data_dir)/%/url.txt
 analyze: $(csv_paths)  ## Analyze colors of the screenshots
 
 $(data_dir)/%/colors.csv: $(data_dir)/%/screenshot.png
-	"./$(_executable)" -v analyze "$<" "$@"
+	if [[ $$(stat -c "%s" "$<") != "0" ]]; then \
+		"./$(_executable)" -v analyze "$<" "$@"; \
+	fi
 
 join: $(chart_paths)  ## Join snapshot colors into one CSV for each website
 
-$(data_dir)/%/chart.csv: $(data_dir)/%
-	"./$(_executable)" -v join "$<" "$@"
+$(data_dir)/%/chart.csv: $(csv_paths)
+	chart_dir=$$(dirname "$@"); \
+	"./$(_executable)" -v join "$$chart_dir" "$@"
 
 chart: $(chart_paths)  ## Chart the joined snapshot colors CSVs
 	for chart_path in $^; do \
