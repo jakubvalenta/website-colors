@@ -12,13 +12,19 @@ class ArchiveError(Exception):
     pass
 
 
+def get_from_web_archive(url: str, *args, **kwargs) -> requests.Response:
+    res = requests.get(
+        url, *args, headers={'User-Agent': 'curl/7.69.1'}, **kwargs
+    )
+    res.raise_for_status()
+    return res
+
+
 def find_closest_snapshot_url(url: str, date: datetime.date) -> str:
     logger.info('Finding closest snaphot URL for %s %s', url, date)
     timestamp = date.strftime('%Y%m%d')
     api_url = f'https://web.archive.org/web/{timestamp}/{url}'
-    res = requests.get(
-        api_url, headers={'User-Agent': 'curl/7.69.1'}, allow_redirects=False
-    )
+    res = get_from_web_archive(api_url, allow_redirects=False)
     snapshot_url = res.headers.get('location')
     if not snapshot_url:
         raise ArchiveError('Failed to find snapshot URL')
@@ -26,8 +32,9 @@ def find_closest_snapshot_url(url: str, date: datetime.date) -> str:
     return snapshot_url
 
 
-def download_snapshot(url: str, f: IO):
-    res = requests.get(url)
+def download_snapshot(snapshot_url: str, f: IO, n_scripts_to_remove: int = 5):
+    res = get_from_web_archive(snapshot_url)
     soup = BeautifulSoup(res.text, 'html.parser')
-    soup.find(id='wm-ipp-base')['style'] = 'display: none'
+    for script in soup.find_all('script')[:n_scripts_to_remove]:
+        script.decompose()
     print(soup, file=f)

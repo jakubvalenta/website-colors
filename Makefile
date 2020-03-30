@@ -8,6 +8,7 @@ date_end := 2020-01-01
 every_months := 12
 snapshot_dirs := $(wildcard $(data_dir)/*/*/)
 url_paths := $(addsuffix url.txt,$(snapshot_dirs))
+html_paths := $(addsuffix snapshot.html,$(snapshot_dirs))
 screenshot_paths := $(addsuffix screenshot.png,$(snapshot_dirs))
 csv_paths := $(addsuffix colors.csv,$(snapshot_dirs))
 chart_paths := $(addsuffix /chart.csv,$(website_dirs))
@@ -22,13 +23,20 @@ $(website_dirs): | $(data_dir)
 		--every-months "$(every_months)" \
 		"http://$$(basename "$@")/" "$@"
 
-screenshot: $(screenshot_paths)  ## Make screenshots of found snapshot URLs
+download: $(html_paths)  ## Download snapshots from found URLs
 
-$(data_dir)/%/screenshot.png: $(data_dir)/%/url.txt
+$(data_dir)/%/snapshot.html: $(data_dir)/%/url.txt
 	url=$$(cat "$<"); \
+	html_path=$$(dirname "$@")/snapshot.html; \
+	"./$(_executable)" -v download "$$url" "$$html_path"
+
+screenshot: $(screenshot_paths)  ## Make screenshots of downloaded snapshots
+
+$(data_dir)/%/screenshot.png: $(data_dir)/%/snapshot.html
 	screenshot_dir=$$(dirname "$@"); \
 	cd "$$screenshot_dir" && \
-	chromium --headless --disable-gpu --screenshot --window-size=1280,800 "$$url"
+	rm -f screenshot.png && \
+	chromium --headless --disable-gpu --screenshot --window-size=1280,800 snapshot.html
 
 analyze: $(csv_paths)  ## Analyze colors of the screenshots
 
