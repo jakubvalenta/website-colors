@@ -23,6 +23,6 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     packages=find_packages(),
-    install_requires=['pandas', 'Pillow'],
+    install_requires=['Pillow', 'pandas', 'selenium'],
     entry_points={'console_scripts': ['web-colors=web_colors.cli:cli']},
 )

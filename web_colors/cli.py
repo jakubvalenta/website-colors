@@ -7,7 +7,7 @@ from typing import IO
 import click
 
 from web_colors.analyze import analyze_image, read_analysis, write_analysis
-from web_colors.archive import find_closest_snapshot_url
+from web_colors.archive import find_closest_snapshot_url, screenshot_snapshot
 from web_colors.chart import create_chart, read_chart_data, write_chart_data
 from web_colors.date_utils import date_range
 
@@ -46,6 +46,15 @@ def find_snapshot(
         snapshot_dir.mkdir(parents=True, exist_ok=True)
         snapshot_url_file = snapshot_dir / 'url.txt'
         snapshot_url_file.write_text(snapshot_url)
+
+
+@cli.command()
+@click.argument('url', type=str)
+@click.argument('output_png', type=click.Path())
+def screenshot(url: str, output_png: str):
+    """Take a screenshot of `url` and write the PNG to `output_png`."""
+    logger.info('Taking screenshot of snapshot %s > %s', url, output_png)
+    screenshot_snapshot(url, output_png)
 
 
 @cli.command()

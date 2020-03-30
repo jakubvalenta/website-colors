@@ -7,7 +7,7 @@ Analyze colors of websites.
 ### Mac
 
 ``` shell
-$ brew install python
+$ brew install python geckodriver
 $ pip install pipenv
 $ make setup
 ```
@@ -15,7 +15,7 @@ $ make setup
 ### Arch Linux
 
 ``` shell
-# pacman -S pipenv
+# pacman -S pipenv geckodriver
 $ make setup
 ```
 
@@ -25,6 +25,7 @@ Install these dependencies manually:
 
 - Python >= 3.7
 - pipenv
+- geckodriver
 
 Then run:
 

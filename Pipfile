@@ -10,6 +10,7 @@ isort = "*"
 mypy = "*"
 
 [packages]
+Pillow = "*"
 click = "*"
 pandas = "*"
-Pillow = "*"
+selenium = "*"

@@ -1,8 +1,12 @@
 import datetime
 import logging
+from typing import IO
 
 import requests
-from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 logger = logging.getLogger(__name__)
 
@@ -29,3 +33,20 @@ def find_closest_snapshot_url(url: str, date: datetime.date) -> str:
         raise ArchiveError('Failed to find snapshot URL')
     logger.info('Closes snapshot URL for %s %s is %s', url, date, snapshot_url)
     return snapshot_url
+
+
+def screenshot_snapshot(url: str, path: str):
+    driver = webdriver.Firefox()
+    driver.get(url)
+    try:
+        logger.info('Waiting for Wayback Machine toolbar to appear')
+        driver.save_screenshot(path)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'wm-ipp-base'))
+        )
+        driver.execute_script(
+            "document.body.removeChild(document.getElementById('wm-ipp-base'))"
+        )
+        driver.save_screenshot(path)
+    finally:
+        driver.quit()
