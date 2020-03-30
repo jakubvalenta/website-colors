@@ -54,7 +54,8 @@ def create_chart(base_url: str, auth_token: str, title: str, data: pd.Series):
         'type': 'd3-area',
         'metadata': {
             'visualize': {
-                'custom-colors': {color: color for color in data.columns}
+                'area-opacity': '1',
+                'custom-colors': {color: color for color in data.columns},
             },
         },
     }
