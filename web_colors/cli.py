@@ -2,20 +2,16 @@ import datetime
 import logging
 import sys
 from pathlib import Path
-from typing import IO, Iterator
+from typing import IO
 
 import click
-import pandas as pd
 
-from web_colors.web_colors import (
-    analyze_image, create_chart, find_closest_snapshot_url,
-)
+from web_colors.analyze import analyze_image, read_analysis, write_analysis
+from web_colors.archive import download_snapshot, find_closest_snapshot_url
+from web_colors.chart import create_chart, read_chart_data, write_chart_data
+from web_colors.date_utils import date_range
 
 logger = logging.getLogger(__name__)
-
-
-class ConfigError(Exception):
-    pass
 
 
 @click.group()
@@ -27,26 +23,6 @@ def cli(verbose: bool):
         logging.basicConfig(
             stream=sys.stderr, level=logging.INFO, format='%(message)s'
         )
-
-
-def date_range(
-    start_date: datetime.date, end_date: datetime.date, every_months: int,
-) -> Iterator[datetime.date]:
-    if start_date > end_date:
-        raise ConfigError('Start date must be before end date')
-    curr_date = start_date
-    while curr_date <= end_date:
-        yield curr_date
-        if curr_date.month + every_months > 12:
-            curr_date = datetime.date(
-                curr_date.year + 1,
-                curr_date.month + every_months - 12,
-                curr_date.day,
-            )
-        else:
-            curr_date = datetime.date(
-                curr_date.year, curr_date.month + every_months, curr_date.day,
-            )
 
 
 @cli.command()
@@ -74,11 +50,11 @@ def find_snapshot(
 
 @cli.command()
 @click.argument('url', type=str)
-@click.argument('output_png', type=click.File('wb'))
-def screenshot(url: str, output_png: IO):
-    """Take a screenshot of a `url` and write it to `output_png`."""
-    logger.info('Screenshot %s > %s', url, output_png.name)
-    output_png.write(b'')
+@click.argument('output_html', type=click.File('wt'))
+def download(url: str, output_html: IO):
+    """Download a snaphost `url`, process the HTML and it as `output_html`."""
+    logger.info('Downloading %s to %s', url, output_html.name)
+    download_snapshot(url, output_html)
 
 
 @cli.command()
@@ -87,17 +63,7 @@ def screenshot(url: str, output_png: IO):
 def analyze(input_image: IO, output_csv: IO):
     """Analyze `input_image` and print results to `output_csv`."""
     data = analyze_image(input_image)
-    if data is not None:
-        data.to_csv(output_csv, index_label='color')
-
-
-def read_snapshot_df(csv_path: Path) -> pd.DataFrame:
-    logger.info('Reading snapshot %s', csv_path)
-    df = pd.read_csv(csv_path)
-    date = datetime.date.fromisoformat(csv_path.parent.name)
-    df['date'] = date
-    df['frequency'] = (df['frequency'] * 100).round()
-    return df.pivot(index='date', columns='color', values='frequency')
+    write_analysis(data, output_csv)
 
 
 @cli.command()
@@ -107,13 +73,10 @@ def read_snapshot_df(csv_path: Path) -> pd.DataFrame:
 @click.argument('output_csv', type=click.File('wt'))
 def join(input_dir: str, output_csv: IO):
     """Join colors recursively found in directory `input_dir`."""
-    snapshot_dfs = [
-        read_snapshot_df(snapshot_csv)
-        for snapshot_csv in Path(input_dir).glob('*/*.csv')
-    ]
-    if snapshot_dfs:
-        df = pd.concat(snapshot_dfs).fillna(0)
-        df.to_csv(output_csv, index_label='date')
+    csv_paths = Path(input_dir).glob('*/*.csv')
+    if csv_paths:
+        snapshot_dfs = (read_analysis(csv_path) for csv_path in csv_paths)
+        write_chart_data(snapshot_dfs, output_csv)
 
 
 @cli.command()
@@ -123,7 +86,7 @@ def join(input_dir: str, output_csv: IO):
 @click.option('--auth-token', envvar='AUTH_TOKEN', type=str)
 def chart(input_csv: IO, title: str, base_url: str, auth_token: str):
     """Create chart from `input_csv`."""
-    data = pd.read_csv(input_csv, index_col='date')
+    data = read_chart_data(input_csv)
     create_chart(base_url, auth_token, title, data)
 
 
