@@ -1,6 +1,5 @@
 import datetime
 import logging
-from typing import IO
 
 import requests
 from bs4 import BeautifulSoup
@@ -30,11 +29,3 @@ def find_closest_snapshot_url(url: str, date: datetime.date) -> str:
         raise ArchiveError('Failed to find snapshot URL')
     logger.info('Closes snapshot URL for %s %s is %s', url, date, snapshot_url)
     return snapshot_url
-
-
-def download_snapshot(snapshot_url: str, f: IO, n_scripts_to_remove: int = 5):
-    res = get_from_web_archive(snapshot_url)
-    soup = BeautifulSoup(res.text, 'html.parser')
-    for script in soup.find_all('script')[:n_scripts_to_remove]:
-        script.decompose()
-    print(soup, file=f)

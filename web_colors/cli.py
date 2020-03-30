@@ -7,7 +7,7 @@ from typing import IO
 import click
 
 from web_colors.analyze import analyze_image, read_analysis, write_analysis
-from web_colors.archive import download_snapshot, find_closest_snapshot_url
+from web_colors.archive import find_closest_snapshot_url
 from web_colors.chart import create_chart, read_chart_data, write_chart_data
 from web_colors.date_utils import date_range
 
@@ -46,15 +46,6 @@ def find_snapshot(
         snapshot_dir.mkdir(parents=True, exist_ok=True)
         snapshot_url_file = snapshot_dir / 'url.txt'
         snapshot_url_file.write_text(snapshot_url)
-
-
-@cli.command()
-@click.argument('url', type=str)
-@click.argument('output_html', type=click.File('wt'))
-def download(url: str, output_html: IO):
-    """Download a snaphost `url`, process the HTML and it as `output_html`."""
-    logger.info('Downloading %s to %s', url, output_html.name)
-    download_snapshot(url, output_html)
 
 
 @cli.command()
