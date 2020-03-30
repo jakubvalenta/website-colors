@@ -1,4 +1,4 @@
-from web_colors.cli import main
+from web_colors.cli import cli
 
 if __name__ == '__main__':
-    main()
+    cli()

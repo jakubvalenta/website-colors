@@ -24,5 +24,5 @@ setup(
     ],
     packages=find_packages(),
     install_requires=['pandas', 'Pillow'],
-    entry_points={'console_scripts': ['web-colors=web_colors.cli:main']},
+    entry_points={'console_scripts': ['web-colors=web_colors.cli:cli']},
 )
