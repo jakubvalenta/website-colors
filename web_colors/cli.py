@@ -92,9 +92,11 @@ def analyze(input_image: IO, output_csv: IO):
 
 
 def read_snapshot_df(csv_path: Path) -> pd.DataFrame:
+    logger.info('Reading snapshot %s', csv_path)
     df = pd.read_csv(csv_path)
     date = datetime.date.fromisoformat(csv_path.parent.name)
     df['date'] = date
+    df['frequency'] = (df['frequency'] * 100).round()
     return df.pivot(index='date', columns='color', values='frequency')
 
 
@@ -107,10 +109,10 @@ def join(input_dir: str, output_csv: IO):
     """Join colors recursively found in directory `input_dir`."""
     snapshot_dfs = [
         read_snapshot_df(snapshot_csv)
-        for snapshot_csv in Path(input_dir).glob('**/*.csv')
+        for snapshot_csv in Path(input_dir).glob('*/*.csv')
     ]
     if snapshot_dfs:
-        df = pd.concat(snapshot_dfs)
+        df = pd.concat(snapshot_dfs).fillna(0)
         df.to_csv(output_csv, index_label='date')
 
 
