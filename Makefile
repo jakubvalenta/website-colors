@@ -26,7 +26,9 @@ screenshot: $(screenshot_paths)  ## Make screenshots of found snapshot URLs
 
 $(data_dir)/%/screenshot.png: $(data_dir)/%/url.txt
 	url=$$(cat "$<"); \
-	"./$(_executable)" -v screenshot "$$url" "$@"
+	screenshot_dir=$$(dirname "$@"); \
+	cd "$$screenshot_dir" && \
+	chromium --headless --disable-gpu --screenshot --window-size=1280,800 "$$url"
 
 analyze: $(csv_paths)  ## Analyze colors of the screenshots
 
