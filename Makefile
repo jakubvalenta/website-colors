@@ -1,60 +1,23 @@
 _python_pkg = web_colors
 _executable = web-colors
-websites := google.com
 data_dir := data
-website_dirs := $(addprefix $(data_dir)/,$(websites))
-date_start := 2001-02-01
-date_end := 2020-02-01
-every_months := 6
-snapshot_dirs := $(wildcard $(data_dir)/*/*/)
-url_paths := $(addsuffix url.txt,$(snapshot_dirs))
-screenshot_paths := $(addsuffix screenshot.png,$(snapshot_dirs))
-csv_paths := $(addsuffix colors.csv,$(snapshot_dirs))
-chart_paths := $(addsuffix /chart.csv,$(website_dirs))
 
-.PHONY: find-snapshots screenshot analyze join chart clean-analysis clean-joined setup setup-dev test lint tox reformat help
+.PHONY: run clean clean-analysis clean-joined setup setup-dev test lint tox reformat help
 
-find-snapshots: | $(data_dir)  ## Find snapshot URLs for specified websites
-	for website in $(websites); do \
-		website_dir=$(data_dir)/$$website; \
-		"./$(_executable)" -v find-snapshots \
-			--start "$(date_start)" --end "$(date_end)" \
-			--every-months "$(every_months)" \
-			"http://$$website/" "$$website_dir"; \
-	done
+run:
+	"./$(_executable)" \
+		--verbose \
+		--website google.com \
+		--date-interval 2001-02-01-2020-02-01 \
+		--every-months 6
 
-screenshot: $(screenshot_paths)  ## Make screenshots of found snapshot URLs
+clean: | clean-analysis clean-joined  ## Remove all intermediate files
 
-$(data_dir)/%/screenshot.png: $(data_dir)/%/url.txt
-	url=$$(cat "$<"); \
-	"./$(_executable)" -v screenshot "$$url" "$@"
+clean-analysis:  ## Remove all colors.csv files
+	-rm -I $(data_dir)/*/*/colors.csv
 
-analyze: $(csv_paths)  ## Analyze colors of the screenshots
-
-$(data_dir)/%/colors.csv: $(data_dir)/%/screenshot.png
-	if [[ $$(stat -c "%s" "$<") != "0" ]]; then \
-		"./$(_executable)" -v analyze "$<" "$@"; \
-	fi
-
-join: $(chart_paths)  ## Join snapshot colors into one CSV for each website
-
-$(data_dir)/%/chart.csv: $(csv_paths)
-	chart_dir=$$(dirname "$@"); \
-	"./$(_executable)" -v join "$$chart_dir" "$@"
-
-chart: $(chart_paths)  ## Chart the joined snapshot colors CSVs
-	for chart_path in $^; do \
-		if [[ -f "$$chart_path" ]]; then \
-			title=$$(basename "$$(dirname "$$chart_path")"); \
-			"./$(_executable)" -v chart --title "$$title" "$$chart_path"; \
-		fi; \
-	done
-
-clean-analysis: ## Remove all colors.csv files
-	-rm -I $(csv_paths)
-
-clean-joined: ## Remove all chart.csv files
-	-rm -I $(chart_paths)
+clean-joined:  ## Remove all chart.csv files
+	-rm -I $(data_dir)/*/chart.csv
 
 setup:  ## Create Pipenv virtual environment and install dependencies.
 	pipenv --three --site-packages

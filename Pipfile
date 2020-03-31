@@ -12,5 +12,6 @@ mypy = "*"
 [packages]
 Pillow = "*"
 click = "*"
+luigi = "*"
 pandas = "*"
 selenium = "*"
