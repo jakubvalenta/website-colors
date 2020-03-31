@@ -5,6 +5,8 @@ from typing import IO, Iterable
 import pandas as pd
 import requests
 
+from web_colors.color_utils import hex_to_h
+
 logger = logging.getLogger(__name__)
 
 
@@ -13,8 +15,11 @@ def read_chart_data(f: IO) -> pd.DataFrame:
 
 
 def write_chart_data(snapshot_dfs: Iterable[pd.DataFrame], f: IO):
-    df = pd.concat(snapshot_dfs).fillna(0)
-    df.sort_index(inplace=True)
+    df = pd.concat(snapshot_dfs)
+    df['h'] = df['color'].apply(hex_to_h)
+    df.sort_values(by='h', inplace=True)
+    df['frequency'] = (df['frequency'] * 10000).round()
+    df = df.pivot(index='date', columns='color', values='frequency').fillna(0)
     df.to_csv(f, index_label='date')
 
 
@@ -27,6 +32,7 @@ def create_chart(base_url: str, auth_token: str, title: str, data: pd.Series):
                 'area-opacity': '1',
                 'custom-colors': {color: color for color in data.columns},
                 'label-colors': False,
+                'labeling': 'off',
                 'show-tooltips': False,
                 'show-tooltips': False,
                 'stack-to-100': True,

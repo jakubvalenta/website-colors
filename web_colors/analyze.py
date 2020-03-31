@@ -1,25 +1,14 @@
 import datetime
 import logging
 from pathlib import Path
-from typing import IO, Tuple
+from typing import IO
 
 import pandas as pd
 from PIL import Image, ImageOps, UnidentifiedImageError
 
+from web_colors.color_utils import color_8bit_to_float, rgb_to_hex
+
 logger = logging.getLogger(__name__)
-
-
-def color_8bit_to_float(color_8bit: Tuple[int, ...]) -> Tuple[float, ...]:
-    return tuple(x / 255 for x in color_8bit)
-
-
-def rgb_to_hex(rgb: Tuple[float, float, float]) -> str:
-    r, g, b = (round(x * 255) for x in rgb)
-    return f'#{r:02x}{g:02x}{b:02x}'
-
-
-def floor_to(v: float, step: float):
-    return v // step * step
 
 
 def analyze_image(f_in: IO) -> pd.Series:
@@ -42,10 +31,8 @@ def analyze_image(f_in: IO) -> pd.Series:
 def read_analysis(csv_path: Path) -> pd.DataFrame:
     logger.info('Reading colors %s', csv_path)
     df = pd.read_csv(csv_path)
-    date = datetime.date.fromisoformat(csv_path.parent.name)
-    df['date'] = date
-    df['frequency'] = (df['frequency'] * 100).round()
-    return df.pivot(index='date', columns='color', values='frequency')
+    df['date'] = datetime.date.fromisoformat(csv_path.parent.name)
+    return df
 
 
 def write_analysis(data: pd.Series, f: IO):
