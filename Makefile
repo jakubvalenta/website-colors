@@ -3,9 +3,9 @@ _executable = web-colors
 websites := google.com
 data_dir := data
 website_dirs := $(addprefix $(data_dir)/,$(websites))
-date_start := 2018-01-01
+date_start := 2001-01-01
 date_end := 2020-01-01
-every_months := 12
+every_months := 6
 snapshot_dirs := $(wildcard $(data_dir)/*/*/)
 url_paths := $(addsuffix url.txt,$(snapshot_dirs))
 screenshot_paths := $(addsuffix screenshot.png,$(snapshot_dirs))
@@ -14,13 +14,14 @@ chart_paths := $(addsuffix /chart.csv,$(website_dirs))
 
 .PHONY: find-snapshots screenshot analyze join chart clean-analysis clean-joined setup setup-dev test lint tox reformat help
 
-find-snapshots: $(website_dirs)  ## Find snapshot URLs for specified websites
-
-$(website_dirs): | $(data_dir)
-	"./$(_executable)" -v find-snapshots \
-		--start "$(date_start)" --end "$(date_end)" \
-		--every-months "$(every_months)" \
-		"http://$$(basename "$@")/" "$@"
+find-snapshots: | $(data_dir)  ## Find snapshot URLs for specified websites
+	for website in $(websites); do \
+		website_dir=$(data_dir)/$$website; \
+		"./$(_executable)" -v find-snapshots \
+			--start "$(date_start)" --end "$(date_end)" \
+			--every-months "$(every_months)" \
+			"http://$$website/" "$$website_dir"; \
+	done
 
 screenshot: $(screenshot_paths)  ## Make screenshots of found snapshot URLs
 
