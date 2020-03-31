@@ -10,6 +10,7 @@ from web_colors.analyze import analyze_image, read_analysis, write_analysis
 from web_colors.archive import find_closest_snapshot_url, screenshot_snapshot
 from web_colors.chart import create_chart, read_chart_data, write_chart_data
 from web_colors.date_utils import date_range
+from web_colors.file_utils import write_text_if_different
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def find_snapshots(
         snapshot_dir = Path(output_dir) / date.isoformat()
         snapshot_dir.mkdir(parents=True, exist_ok=True)
         snapshot_url_file = snapshot_dir / 'url.txt'
-        snapshot_url_file.write_text(snapshot_url)
+        write_text_if_different(snapshot_url_file, snapshot_url)
 
 
 @cli.command()
