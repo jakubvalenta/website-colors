@@ -31,6 +31,7 @@ def create_chart(base_url: str, auth_token: str, title: str, data: pd.Series):
             'visualize': {
                 'area-opacity': '1',
                 'custom-colors': {color: color for color in data.columns},
+                'interpolation': 'step',
                 'label-colors': False,
                 'labeling': 'off',
                 'show-tooltips': False,
