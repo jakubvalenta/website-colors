@@ -1,1 +1,1 @@
-__title__ = 'Org-mode Filter'
+__title__ = 'Web Colors'
