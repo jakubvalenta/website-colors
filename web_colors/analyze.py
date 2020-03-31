@@ -4,30 +4,39 @@ from pathlib import Path
 from typing import IO, Tuple
 
 import pandas as pd
-from PIL import Image, UnidentifiedImageError
-
-RGB = Tuple[int, int, int]
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 logger = logging.getLogger(__name__)
 
 
-def rgb2hex(rgb: RGB) -> str:
-    r, g, b = rgb
+def color_8bit_to_float(color_8bit: Tuple[int, ...]) -> Tuple[float, ...]:
+    return tuple(x / 255 for x in color_8bit)
+
+
+def rgb_to_hex(rgb: Tuple[float, float, float]) -> str:
+    r, g, b = (round(x * 255) for x in rgb)
     return f'#{r:02x}{g:02x}{b:02x}'
 
 
-def analyze_image(f_in: IO, bg_color: RGB = (255, 255, 255)) -> pd.Series:
+def floor_to(v: float, step: float):
+    return v // step * step
+
+
+def analyze_image(f_in: IO) -> pd.Series:
     try:
-        im = Image.open(f_in)
+        im = Image.open(f_in).convert(mode='RGB')
     except UnidentifiedImageError:
         logger.error('Failed to read image, skipping')
         return None
-    im_rgb = im.convert(mode='RGB')
-    pixels = pd.Series(list(im_rgb.getdata()), name='frequency')
-    fg_pixels = pixels[pixels != bg_color].apply(rgb2hex)
-    fg_counts = fg_pixels.value_counts(normalize=True)
-    fg_counts_large = fg_counts[fg_counts >= 0.01]
-    return fg_counts_large
+    im = ImageOps.posterize(im, 3)
+    pixels = pd.Series(list(im.getdata()), name='frequency')
+    pixels = pixels.apply(color_8bit_to_float)
+    pixels = pixels.apply(rgb_to_hex)
+    counts = pixels.value_counts(normalize=True)
+    counts = counts[counts < 0.8]
+    counts = counts[counts > 0.0001]
+    counts = counts / counts.sum()
+    return counts
 
 
 def read_analysis(csv_path: Path) -> pd.DataFrame:
