@@ -26,6 +26,12 @@ def create_chart(base_url: str, auth_token: str, title: str, data: pd.Series):
             'visualize': {
                 'area-opacity': '1',
                 'custom-colors': {color: color for color in data.columns},
+                'label-colors': False,
+                'show-tooltips': False,
+                'show-tooltips': False,
+                'stack-to-100': True,
+                'y-grid': 'off',
+                'y-grid-format': '0%',
             },
         },
     }
