@@ -36,7 +36,9 @@ def find_closest_snapshot_url(url: str, date: datetime.date) -> str:
 
 
 def screenshot_snapshot(url: str, path: str):
-    driver = webdriver.Firefox()
+    options = webdriver.FirefoxOptions()
+    options.headless = True
+    driver = webdriver.Firefox(options=options)
     driver.get(url)
     try:
         logger.info('Waiting for Wayback Machine toolbar to appear')
