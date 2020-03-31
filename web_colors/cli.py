@@ -33,10 +33,10 @@ def cli(verbose: bool):
 @click.option(
     '--every-months', '-m', type=int, help='Find a snapshot every # months',
 )
-def find_snapshot(
+def find_snapshots(
     url: str, output_dir: str, start: str, end: str, every_months: int,
 ):
-    """Find archive URLs for `url` and save results to `output_dir`."""
+    """Find snapshot URLs for `url` and save results to `output_dir`."""
     start_date = datetime.date.fromisoformat(start)
     end_date = datetime.date.fromisoformat(end)
     dates = date_range(start_date, end_date, every_months)
