@@ -12,7 +12,7 @@ screenshot_paths := $(addsuffix screenshot.png,$(snapshot_dirs))
 csv_paths := $(addsuffix colors.csv,$(snapshot_dirs))
 chart_paths := $(addsuffix /chart.csv,$(website_dirs))
 
-.PHONY: find-snapshots screenshot analyze join chart setup setup-dev test lint tox reformat help
+.PHONY: find-snapshots screenshot analyze join chart clean-analysis setup setup-dev test lint tox reformat help
 
 find-snapshots: $(website_dirs)  ## Find snapshot URLs for specified websites
 
@@ -48,6 +48,9 @@ chart: $(chart_paths)  ## Chart the joined snapshot colors CSVs
 			"./$(_executable)" -v chart --title "$$title" "$$chart_path"; \
 		fi; \
 	done
+
+clean-analysis: ## Remove all colors.csv files
+	rm -f -I $(csv_paths)
 
 setup:  ## Create Pipenv virtual environment and install dependencies.
 	pipenv --three --site-packages
