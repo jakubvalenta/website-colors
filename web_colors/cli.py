@@ -83,7 +83,7 @@ def join(input_dir: str, output_csv: IO):
 @click.argument('input_csv', type=click.File('rt'))
 @click.option('--title', '-t', type=str, default='Colors')
 @click.option('--base-url', type=str, default='http://api.datawrapper.local')
-@click.option('--auth-token', envvar='AUTH_TOKEN', type=str)
+@click.option('--auth-token', envvar='AUTH_TOKEN', type=str, required=True)
 def chart(input_csv: IO, title: str, base_url: str, auth_token: str):
     """Create chart from `input_csv`."""
     data = read_chart_data(input_csv)
