@@ -1,15 +1,32 @@
 _python_pkg = web_colors
 _executable = web-colors
 data_dir := data
+workers := 2
+args := --verbose --workers $(workers)
 
 .PHONY: run clean clean-analysis clean-joined setup setup-dev test lint tox reformat help
 
 run:
-	"./$(_executable)" \
-		--verbose \
-		--website google.com \
+	"./$(_executable)" $(args) \
+		--title Google \
+		--url http://www.google.com/ \
 		--date-interval 2001-02-01-2020-02-01 \
 		--every-months 6
+	"./$(_executable)" $(args) \
+		--title Wikipedia \
+		--url http://en.wikipedia.org/wiki/Main_Page \
+		--date-interval 2001-02-01-2020-02-01 \
+		--every-months 12
+	"./$(_executable)" $(args) \
+		--title Amazon \
+		--url http://www.amazon.com/ \
+		--date-interval 2001-02-01-2020-02-01 \
+		--every-months 12
+	"./$(_executable)" $(args) \
+		--title BBC \
+		--url https://www.bbc.com/news \
+		--date-interval 2001-02-01-2020-02-01 \
+		--every-months 12
 
 clean: | clean-analysis clean-joined  ## Remove all intermediate files
 
