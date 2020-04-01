@@ -1,6 +1,9 @@
 # Website Colors
 
-Analyze colors of websites.
+Analyze the history of colors of a websites from screenshots acquired from the
+Internet Archive and plot the data using Datawrapper.
+
+TODO: Add link to the Weekly Chart blog post
 
 ## Installation
 
@@ -35,11 +38,23 @@ $ make setup
 
 ## Usage
 
-See the help for all command line options:
+Example:
 
 ``` shell
-./website-colors --help
+export AUTH_TOKEN='<your datawrapper auth token>'
+./website-colors \
+    --url http://www.google.com/ \
+    --date-interval 2006-02-01-2010-02-01 \
+    --every-months 12
 ```
+
+This will make a screenshot of <http://www.google.com/> from historic snapshots
+archived by the Internet Archive every year on February 1 since 2006 until 2010.
+
+Then it will analyze the colors of each of the screenshots and create a chart at
+<https://app.datawrapper.de/>.
+
+All intermediate data will be stored in the directory `data/`.
 
 ## Development
 
