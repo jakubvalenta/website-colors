@@ -6,10 +6,14 @@ from pathlib import Path
 
 import luigi
 
-from web_colors.analyze import analyze_image, read_analysis, write_analysis
-from web_colors.archive import find_closest_snapshot_url, screenshot_snapshot
-from web_colors.chart import create_chart, read_chart_data, write_chart_data
-from web_colors.date_utils import date_range
+from website_colors.analyze import analyze_image, read_analysis, write_analysis
+from website_colors.archive import (
+    find_closest_snapshot_url, screenshot_snapshot,
+)
+from website_colors.chart import (
+    create_chart, read_chart_data, write_chart_data,
+)
+from website_colors.date_utils import date_range
 
 DATA_PATH = 'data'
 

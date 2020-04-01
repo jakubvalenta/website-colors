@@ -1,6 +1,6 @@
-_python_pkg = web_colors
-_executable = web-colors
-_executable_clean = web-colors-clean
+_python_pkg = website_colors
+_executable = website-colors
+_executable_clean = website-colors-clean
 data_dir := data
 workers := 2
 args := --verbose --workers $(workers)

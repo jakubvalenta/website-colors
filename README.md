@@ -1,4 +1,4 @@
-# Web Colors
+# Website Colors
 
 Analyze colors of websites.
 
@@ -38,7 +38,7 @@ $ make setup
 See the help for all command line options:
 
 ``` shell
-./web-colors --help
+./website-colors --help
 ```
 
 ## Development

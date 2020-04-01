@@ -5,7 +5,7 @@ from typing import IO, Iterable
 import pandas as pd
 import requests
 
-from web_colors.color_utils import hex_to_h
+from website_colors.color_utils import hex_to_h
 
 logger = logging.getLogger(__name__)
 

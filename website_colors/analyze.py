@@ -5,7 +5,7 @@ from typing import IO
 import pandas as pd
 from PIL import Image, ImageOps, UnidentifiedImageError
 
-from web_colors.color_utils import color_8bit_to_float, rgb_to_hex
+from website_colors.color_utils import color_8bit_to_float, rgb_to_hex
 
 logger = logging.getLogger(__name__)
 

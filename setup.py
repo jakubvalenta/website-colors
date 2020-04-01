@@ -2,14 +2,14 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-from web_colors import __title__
+from website_colors import __title__
 
 setup(
-    name='web-colors',
+    name='website-colors',
     version='0.1.0',
     description=__title__,
     long_description=(Path(__file__).parent / 'README.md').read_text(),
-    url='https://lab.saloun.cz/jakub/web-colors',
+    url='https://www.github.com/jakubvalenta/website-colors',
     author='Jakub Valenta',
     author_email='jakub@jakubvalenta.cz',
     license='Apache Software License',
