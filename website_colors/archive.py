@@ -3,6 +3,7 @@ import logging
 
 import requests
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -34,6 +35,22 @@ def find_closest_snapshot_url(url: str, date: datetime.date) -> str:
     return snapshot_url
 
 
+def hide_wayback_machine_bar(
+    driver: webdriver.Firefox, element_id: str = 'wm-ipp-base'
+):
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, element_id))
+        )
+        driver.execute_script(
+            'document.body.removeChild'
+            f"(document.getElementById('{element_id}'))"
+        )
+        return True
+    except TimeoutException:
+        return False
+
+
 def screenshot_snapshot(url: str, path: str):
     logger.info('Taking screenshot of snapshot %s > %s', url, path)
     options = webdriver.FirefoxOptions()
@@ -41,13 +58,15 @@ def screenshot_snapshot(url: str, path: str):
     driver = webdriver.Firefox(options=options)
     driver.get(url)
     try:
-        logger.info('Waiting for Wayback Machine toolbar to appear')
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, 'wm-ipp-base'))
-        )
-        driver.execute_script(
-            "document.body.removeChild(document.getElementById('wm-ipp-base'))"
-        )
-        driver.save_screenshot(path)
+        logger.info('Waiting for the Wayback Machine bar to appear')
+        if hide_wayback_machine_bar(driver):
+            driver.save_screenshot(path)
+        else:
+            logger.info(
+                'The Wayback Machine bar didn\'t appear, '
+                'saving and empty screenshot file'
+            )
+            with open(path, 'w') as f:
+                f.write('')
     finally:
         driver.quit()
