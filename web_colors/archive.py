@@ -42,7 +42,6 @@ def screenshot_snapshot(url: str, path: str):
     driver.get(url)
     try:
         logger.info('Waiting for Wayback Machine toolbar to appear')
-        driver.save_screenshot(path)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.ID, 'wm-ipp-base'))
         )
