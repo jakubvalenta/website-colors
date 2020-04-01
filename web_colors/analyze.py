@@ -11,8 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 def analyze_image(
-    path: str, date: datetime.date, posterize_bits: int = 4
-) -> pd.Series:
+    path: str,
+    date: datetime.date,
+    posterize_bits: int = 4,
+    min_frequency: float = 0.0001,
+) -> pd.DataFrame:
     try:
         im = Image.open(path).convert(mode='RGB')
         im = ImageOps.posterize(im, posterize_bits)
@@ -24,7 +27,7 @@ def analyze_image(
     pixels = pixels.apply(color_8bit_to_float)
     pixels = pixels.apply(rgb_to_hex)
     counts = pixels.value_counts(normalize=True)
-    counts = counts[counts > 0.0001]
+    counts = counts[counts > min_frequency]
     counts = counts / counts.sum()
     df = pd.DataFrame(
         {'frequency': counts.values, 'date': date}, index=counts.index
