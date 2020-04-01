@@ -23,5 +23,5 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     packages=find_packages(),
-    install_requires=['Pillow', 'click', 'luigi', 'pandas', 'selenium'],
+    install_requires=['Pillow', 'luigi', 'pandas', 'selenium'],
 )
