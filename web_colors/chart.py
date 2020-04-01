@@ -23,14 +23,18 @@ def write_chart_data(snapshot_dfs: Iterable[pd.DataFrame], f: IO):
     df.to_csv(f, index_label='date')
 
 
-def create_chart(base_url: str, auth_token: str, title: str, data: pd.Series):
+def create_chart(
+    base_url: str, auth_token: str, title: str, data: pd.Series
+) -> str:
+    custom_colors = {color: color for color in data.columns}
+    custom_colors['#f0f0f0'] = '#ffffff'
     props = {
         'title': title,
         'type': 'd3-area',
         'metadata': {
             'visualize': {
                 'area-opacity': '1',
-                'custom-colors': {color: color for color in data.columns},
+                'custom-colors': custom_colors,
                 'interpolation': 'step',
                 'label-colors': False,
                 'labeling': 'off',
@@ -59,3 +63,4 @@ def create_chart(base_url: str, auth_token: str, title: str, data: pd.Series):
     )
     res.raise_for_status()
     logger.info('Uploaded data for chart %s %s', title, chart_id)
+    return chart_id
