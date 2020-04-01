@@ -28,11 +28,11 @@ run:  ## Run the pipeline
 		--url http://www.bbc.com/news \
 		--date-interval 2001-02-01-2020-02-01 \
 		--every-months 12
-	# "./$(_executable)" $(args) \
-	#	--title eBay \
-	#	--url http://www.ebay.com/ \
-	#	--date-interval 2001-02-01-2020-02-01 \
-	#	--every-months 12
+	"./$(_executable)" $(args) \
+		--title eBay \
+		--url http://www.ebay.com/ \
+		--date-interval 2001-02-01-2020-02-01 \
+		--every-months 12
 	# "./$(_executable)" $(args) \
 	#	--title Yahoo Mail \
 	#	--url http://mail.yahoo.com/ \
@@ -54,6 +54,10 @@ clean:  ## Remove all intermediate files except URLs and screenshots
 		--every-months 12
 	"./$(_executable_clean)" \
 		--url http://www.bbc.com/news \
+		--date-interval 2001-02-01-2020-02-01 \
+		--every-months 12
+	"./$(_executable)" $(args) \
+		--url http://www.ebay.com/ \
 		--date-interval 2001-02-01-2020-02-01 \
 		--every-months 12
 
