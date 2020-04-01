@@ -1,6 +1,7 @@
+import csv
+import datetime
 import logging
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -13,25 +14,18 @@ from website_colors.archive import (
 from website_colors.chart import (
     create_chart, read_chart_data, write_chart_data,
 )
-from website_colors.date_utils import date_range
 
 DATA_PATH = 'data'
 
 
-class URLParameterMixin:
+class FindSnapshot(luigi.Task):
+    name = luigi.Parameter()
     url = luigi.Parameter()
-
-    @property
-    def dirname(self) -> str:
-        return re.sub(r'[^A-Za-z0-9_\-\.]', '_', self.url)
-
-
-class FindSnapshot(URLParameterMixin, luigi.Task):
     date = luigi.DateParameter()
 
     def output(self):
         return luigi.LocalTarget(
-            Path(DATA_PATH) / self.dirname / self.date.isoformat() / 'url.txt'
+            Path(DATA_PATH) / self.name / self.date.isoformat() / 'url.txt'
         )
 
     def run(self):
@@ -40,19 +34,21 @@ class FindSnapshot(URLParameterMixin, luigi.Task):
             print(snapshot_url, file=f)
 
 
-class TakeScreenshot(URLParameterMixin, luigi.Task):
+class TakeScreenshot(luigi.Task):
+    name = luigi.Parameter()
+    url = luigi.Parameter()
     date = luigi.DateParameter()
 
     def output(self):
         return luigi.LocalTarget(
             Path(DATA_PATH)
-            / self.dirname
+            / self.name
             / self.date.isoformat()
             / 'screenshot.png'
         )
 
     def requires(self):
-        return FindSnapshot(url=self.url, date=self.date)
+        return FindSnapshot(name=self.name, url=self.url, date=self.date)
 
     def run(self):
         with self.input().open('r') as f:
@@ -60,19 +56,18 @@ class TakeScreenshot(URLParameterMixin, luigi.Task):
         screenshot_snapshot(url, self.output().path)
 
 
-class AnalyzeImage(URLParameterMixin, luigi.Task):
+class AnalyzeImage(luigi.Task):
+    name = luigi.Parameter()
+    url = luigi.Parameter()
     date = luigi.DateParameter()
 
     def output(self):
         return luigi.LocalTarget(
-            Path(DATA_PATH)
-            / self.dirname
-            / self.date.isoformat()
-            / 'colors.csv'
+            Path(DATA_PATH) / self.name / self.date.isoformat() / 'colors.csv'
         )
 
     def requires(self):
-        return TakeScreenshot(url=self.url, date=self.date)
+        return TakeScreenshot(name=self.name, url=self.url, date=self.date)
 
     def run(self):
         data = analyze_image(self.input().path, self.date)
@@ -80,21 +75,19 @@ class AnalyzeImage(URLParameterMixin, luigi.Task):
             write_analysis(data, f)
 
 
-class CreateChartData(URLParameterMixin, luigi.Task):
-    date_interval = luigi.DateIntervalParameter()
-    every_months = luigi.IntParameter()
+class CreateChartData(luigi.Task):
+    name = luigi.Parameter()
 
     def output(self):
-        return luigi.LocalTarget(Path(DATA_PATH) / self.dirname / 'chart.csv')
+        return luigi.LocalTarget(Path(DATA_PATH) / self.name / 'chart.csv')
 
     def requires(self):
-        dates = date_range(
-            self.date_interval.date_a,
-            self.date_interval.date_b,
-            self.every_months,
-        )
-        for date in dates:
-            yield AnalyzeImage(url=self.url, date=date)
+        input_path = Path(DATA_PATH) / self.name / 'input.csv'
+        with input_path.open('r') as f:
+            for row in csv.DictReader(f):
+                url = row['url']
+                date = datetime.date.fromisoformat(row['date'])
+                yield AnalyzeImage(name=self.name, url=url, date=date)
 
     def run(self):
         snapshot_dfs = []
@@ -106,55 +99,60 @@ class CreateChartData(URLParameterMixin, luigi.Task):
             write_chart_data(snapshot_dfs, f)
 
 
-class CreateChart(URLParameterMixin, luigi.Task):
-    title = luigi.Parameter()
-    date_interval = luigi.DateIntervalParameter()
-    every_months = luigi.IntParameter()
+class CreateChart(luigi.Task):
+    name = luigi.Parameter()
+    base_url = luigi.Parameter()
+    auth_token = luigi.Parameter()
+
+    def output(self):
+        return luigi.LocalTarget(Path(DATA_PATH) / self.name / 'chart_id.txt')
+
+    def requires(self):
+        return CreateChartData(name=self.name)
+
+    def run(self):
+        auth_token = self.auth_token or os.environ.get('AUTH_TOKEN')
+        if not auth_token:
+            raise ValueError('Auth token is not defined')
+        with self.input().open('r') as f:
+            data = read_chart_data(f)
+        chart_id = create_chart(
+            self.base_url, auth_token, title=self.name, data=data
+        )
+        with self.output().open('w') as f:
+            print(chart_id, file=f)
+
+
+class CreateCharts(luigi.Task):
     base_url = luigi.Parameter(default='http://api.datawrapper.local')
     auth_token = luigi.Parameter(default='')
     verbose = luigi.BoolParameter(default=False)
 
-    def output(self):
-        return luigi.LocalTarget(
-            Path(DATA_PATH) / self.dirname / 'chart_id.txt'
-        )
-
     def requires(self):
-        return CreateChartData(
-            url=self.url,
-            date_interval=self.date_interval,
-            every_months=self.every_months,
-        )
+        for path in Path(DATA_PATH).glob('*/input.csv'):
+            yield CreateChart(
+                name=path.parent.name,
+                base_url=self.base_url,
+                auth_token=self.auth_token,
+            )
 
     def run(self):
         if self.verbose:
             logging.basicConfig(
                 stream=sys.stderr, level=logging.INFO, format='%(message)s'
             )
-        auth_token = self.auth_token or os.environ.get('AUTH_TOKEN')
-        if not auth_token:
-            raise ValueError('Auth token is not defined')
-        with self.input().open('r') as f:
-            data = read_chart_data(f)
-        chart_id = create_chart(self.base_url, auth_token, self.title, data)
-        with self.output().open('w') as f:
-            print(chart_id, file=f)
 
 
-class CleanAnalysis(URLParameterMixin, luigi.Task):
-    date_interval = luigi.DateIntervalParameter()
-    every_months = luigi.IntParameter()
-
+class CleanAnalysis(luigi.Task):
     def run(self):
-        dates = date_range(
-            self.date_interval.date_a,
-            self.date_interval.date_b,
-            self.every_months,
-        )
-        website_path = Path(DATA_PATH) / self.dirname
-        for date in dates:
-            (website_path / date.isoformat() / 'colors.csv').unlink(
-                missing_ok=True
-            )
-        (website_path / 'chart.csv').unlink(missing_ok=True)
-        (website_path / 'chart_id.txt').unlink(missing_ok=True)
+        for input_path in Path(DATA_PATH).glob('*/input.csv'):
+            name = input_path.parent.name
+            website_path = Path(DATA_PATH) / name
+            with input_path.open('r') as f:
+                for row in csv.DictReader(f):
+                    date = row['date']
+                    (website_path / date / 'colors.csv').unlink(
+                        missing_ok=True
+                    )
+            (website_path / 'chart.csv').unlink(missing_ok=True)
+            (website_path / 'chart_id.txt').unlink(missing_ok=True)

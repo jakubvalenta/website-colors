@@ -62,6 +62,7 @@ def screenshot_snapshot(url: str, path: str):
         if hide_wayback_machine_bar(driver):
             driver.save_screenshot(path)
         else:
+            driver.save_screenshot(path + '.error.png')
             logger.info(
                 'The Wayback Machine bar didn\'t appear, '
                 'saving and empty screenshot file'
