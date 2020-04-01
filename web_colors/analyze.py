@@ -10,10 +10,12 @@ from web_colors.color_utils import color_8bit_to_float, rgb_to_hex
 logger = logging.getLogger(__name__)
 
 
-def analyze_image(path: str, date: datetime.date) -> pd.Series:
+def analyze_image(
+    path: str, date: datetime.date, posterize_bits: int = 4
+) -> pd.Series:
     try:
         im = Image.open(path).convert(mode='RGB')
-        im = ImageOps.posterize(im, 3)
+        im = ImageOps.posterize(im, posterize_bits)
         im_data = list(im.getdata())
     except UnidentifiedImageError:
         logger.error('Failed to read image, skipping')
@@ -22,8 +24,6 @@ def analyze_image(path: str, date: datetime.date) -> pd.Series:
     pixels = pixels.apply(color_8bit_to_float)
     pixels = pixels.apply(rgb_to_hex)
     counts = pixels.value_counts(normalize=True)
-    max_color = counts.max()
-    counts = counts[counts != max_color]
     counts = counts[counts > 0.0001]
     counts = counts / counts.sum()
     df = pd.DataFrame(
