@@ -13,11 +13,12 @@ logger = logging.getLogger(__name__)
 def analyze_image(path: str, date: datetime.date) -> pd.Series:
     try:
         im = Image.open(path).convert(mode='RGB')
+        im = ImageOps.posterize(im, 3)
+        im_data = list(im.getdata())
     except UnidentifiedImageError:
         logger.error('Failed to read image, skipping')
-        return None
-    im = ImageOps.posterize(im, 3)
-    pixels = pd.Series(list(im.getdata()))
+        im_data = []
+    pixels = pd.Series(im_data)
     pixels = pixels.apply(color_8bit_to_float)
     pixels = pixels.apply(rgb_to_hex)
     counts = pixels.value_counts(normalize=True)
