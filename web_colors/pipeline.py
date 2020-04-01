@@ -110,6 +110,11 @@ class CreateChart(URLParameterMixin, luigi.Task):
     auth_token = luigi.Parameter(default='')
     verbose = luigi.BoolParameter(default=False)
 
+    def output(self):
+        return luigi.LocalTarget(
+            Path(DATA_PATH) / self.dirname / 'chart_id.txt'
+        )
+
     def requires(self):
         return CreateChartData(
             url=self.url,
@@ -127,7 +132,9 @@ class CreateChart(URLParameterMixin, luigi.Task):
             raise ValueError('Auth token is not defined')
         with self.input().open('r') as f:
             data = read_chart_data(f)
-        create_chart(self.base_url, auth_token, self.title, data)
+        chart_id = create_chart(self.base_url, auth_token, self.title, data)
+        with self.output().open('w') as f:
+            print(chart_id, file=f)
 
 
 class CleanAnalysis(URLParameterMixin, luigi.Task):
@@ -146,3 +153,4 @@ class CleanAnalysis(URLParameterMixin, luigi.Task):
                 missing_ok=True
             )
         (website_path / 'chart.csv').unlink(missing_ok=True)
+        (website_path / 'chart_id.txt').unlink(missing_ok=True)
