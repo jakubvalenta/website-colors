@@ -22,7 +22,8 @@ def analyze_image(path: str, date: datetime.date) -> pd.Series:
     pixels = pixels.apply(color_8bit_to_float)
     pixels = pixels.apply(rgb_to_hex)
     counts = pixels.value_counts(normalize=True)
-    counts = counts[counts < 0.8]
+    max_color = counts.max()
+    counts = counts[counts != max_color]
     counts = counts[counts > 0.0001]
     counts = counts / counts.sum()
     df = pd.DataFrame(
