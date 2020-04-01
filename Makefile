@@ -1,5 +1,6 @@
 _python_pkg = web_colors
 _executable = web-colors
+_executable_clean = web-colors-clean
 data_dir := data
 workers := 2
 args := --verbose --workers $(workers)
@@ -24,17 +25,25 @@ run:
 		--every-months 12
 	"./$(_executable)" $(args) \
 		--title BBC \
-		--url https://www.bbc.com/news \
+		--url http://www.bbc.com/news \
 		--date-interval 2001-02-01-2020-02-01 \
 		--every-months 12
+	# "./$(_executable)" $(args) \
+	#	--title eBay \
+	#	--url http://www.ebay.com/ \
+	#	--date-interval 2001-02-01-2020-02-01 \
+	#	--every-months 12
+	# "./$(_executable)" $(args) \
+	#	--title Yahoo Mail \
+	#	--url http://mail.yahoo.com/ \
+	#	--date-interval 2001-02-01-2020-02-01 \
+	#	--every-months 12
 
-clean: | clean-analysis clean-joined  ## Remove all intermediate files
-
-clean-analysis:  ## Remove all colors.csv files
-	-rm -I $(data_dir)/*/*/colors.csv
-
-clean-joined:  ## Remove all chart.csv files
-	-rm -I $(data_dir)/*/chart.csv
+clean:  ## Remove analysis files
+	"./$(_executable_clean)" \
+		--url http://www.google.com/ \
+		--date-interval 2001-02-01-2020-02-01 \
+		--every-months 6
 
 setup:  ## Create Pipenv virtual environment and install dependencies.
 	pipenv --three --site-packages

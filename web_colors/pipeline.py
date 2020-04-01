@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import sys
+from pathlib import Path
 
 import luigi
 
@@ -9,6 +10,8 @@ from web_colors.analyze import analyze_image, read_analysis, write_analysis
 from web_colors.archive import find_closest_snapshot_url, screenshot_snapshot
 from web_colors.chart import create_chart, read_chart_data, write_chart_data
 from web_colors.date_utils import date_range
+
+DATA_PATH = 'data'
 
 
 class URLParameterMixin:
@@ -24,7 +27,7 @@ class FindSnapshot(URLParameterMixin, luigi.Task):
 
     def output(self):
         return luigi.LocalTarget(
-            f'data/{self.dirname}/{self.date.isoformat()}/url.txt'
+            Path(DATA_PATH) / self.dirname / self.date.isoformat() / 'url.txt'
         )
 
     def run(self):
@@ -38,7 +41,10 @@ class TakeScreenshot(URLParameterMixin, luigi.Task):
 
     def output(self):
         return luigi.LocalTarget(
-            f'data/{self.dirname}/{self.date.isoformat()}/screenshot.png'
+            Path(DATA_PATH)
+            / self.dirname
+            / self.date.isoformat()
+            / 'screenshot.png'
         )
 
     def requires(self):
@@ -55,7 +61,10 @@ class AnalyzeImage(URLParameterMixin, luigi.Task):
 
     def output(self):
         return luigi.LocalTarget(
-            f'data/{self.dirname}/{self.date.isoformat()}/colors.csv'
+            Path(DATA_PATH)
+            / self.dirname
+            / self.date.isoformat()
+            / 'colors.csv'
         )
 
     def requires(self):
@@ -72,7 +81,7 @@ class CreateChartData(URLParameterMixin, luigi.Task):
     every_months = luigi.IntParameter()
 
     def output(self):
-        return luigi.LocalTarget(f'data/{self.dirname}/chart.csv')
+        return luigi.LocalTarget(Path(DATA_PATH) / self.dirname / 'chart.csv')
 
     def requires(self):
         dates = date_range(
@@ -119,3 +128,21 @@ class CreateChart(URLParameterMixin, luigi.Task):
         with self.input().open('r') as f:
             data = read_chart_data(f)
         create_chart(self.base_url, auth_token, self.title, data)
+
+
+class CleanAnalysis(URLParameterMixin, luigi.Task):
+    date_interval = luigi.DateIntervalParameter()
+    every_months = luigi.IntParameter()
+
+    def run(self):
+        dates = date_range(
+            self.date_interval.date_a,
+            self.date_interval.date_b,
+            self.every_months,
+        )
+        website_path = Path(DATA_PATH) / self.dirname
+        for date in dates:
+            (website_path / date.isoformat() / 'colors.csv').unlink(
+                missing_ok=True
+            )
+        (website_path / 'chart.csv').unlink(missing_ok=True)
