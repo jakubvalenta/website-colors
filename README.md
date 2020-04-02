@@ -3,7 +3,11 @@
 Analyze the history of colors of a websites from screenshots acquired from the
 Internet Archive and plot the data using Datawrapper.
 
-TODO: Add link to the Weekly Chart blog post
+https://blog.datawrapper.de/weekly-chart-website-colors/
+
+![History of the colors of wikipedia.org](./screenshots/wikipedia-600x400.png)
+
+![History of the colors of amazon.com](./screenshots/wikipedia-600x400.png)
 
 ## Installation
 
