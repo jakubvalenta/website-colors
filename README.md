@@ -6,8 +6,6 @@ Use screenshots from the Internet Archive and plot the data with Datawrapper.
 
 https://blog.datawrapper.de/weekly-chart-website-colors/
 
-![History of the colors of wikipedia.org](./screenshots/wikipedia-600x400.png)
-
 ![History of the colors of amazon.com](./screenshots/amazon-600x400.png)
 
 ## Installation
