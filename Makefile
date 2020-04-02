@@ -1,17 +1,14 @@
 _python_pkg = website_colors
 _executable = website-colors
 _executable_clean = website-colors-clean
-data_dir := data
-workers := 2
-args := --verbose --workers $(workers)
 
 .PHONY: run clean clean-analysis clean-joined setup setup-dev test lint tox reformat help
 
 run:  ## Run the pipeline
-	"./$(_executable)" $(args)
+	"./$(_executable)" --verbose $(args) --workers 2
 
 clean:  ## Remove all intermediate files except URLs and screenshots
-	"./$(_executable_clean)"
+	"./$(_executable_clean)" $(args)
 
 setup:  ## Create Pipenv virtual environment and install dependencies.
 	pipenv --three --site-packages

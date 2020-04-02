@@ -38,23 +38,42 @@ $ make setup
 
 ## Usage
 
-Example:
+1. Create a new directory for the website color analysis. Example:
 
-``` shell
-export AUTH_TOKEN='<your datawrapper auth token>'
-./website-colors \
-    --url http://www.google.com/ \
-    --date-interval 2006-02-01-2010-02-01 \
-    --every-months 12
-```
+    ``` shell
+    $ mkdir -p data/BBC
+    ```
 
-This will make a screenshot of <http://www.google.com/> from historic snapshots
-archived by the Internet Archive every year on February 1 since 2006 until 2010.
+2. Create a CSV file with the website URL and snapshot dates you wish to
+   analyze. Example:
 
-Then it will analyze the colors of each of the screenshots and create a chart at
-<https://app.datawrapper.de/>.
+    ``` csv
+    # data/BBC/input.csv
+    date,url
+    2010-02-01,http://news.bbc.co.uk/
+    2011-02-01,http://www.bbc.com/news
+    ```
 
-All intermediate data will be stored in the directory `data/`.
+    Notice that each date can have a different URL.
+
+3. Run the processing pipeline with arguments specifying the data directory and
+   your Datawrapper API Access Token. Example
+
+    ``` shell
+    $ ./website-colors \
+        --verbose \
+        --data-dir="./data" \
+        --auth-token="$(secret-tool lookup datawrapper auth-token)"
+    ```
+
+    This will take a screenshot of each of the historic snapshots defined in
+    `input.csv`, analyze its colors, and create a chart in the [Datawrapper
+    App](https://app.datawrapper.de/).
+
+    All intermediate data will be stored in the data directory.
+
+    If the pipeline execution fails anywhere in the process, you can safely
+    rerun it and it will continue where it left of.
 
 ## Development
 
