@@ -1,7 +1,8 @@
 # Website Colors
 
-Analyze the history of colors of a websites from screenshots acquired from the
-Internet Archive and plot the data using Datawrapper.
+Visualize how a website's colors changed over time.
+
+Use screenshots from the Internet Archive and plot the data with Datawrapper.
 
 https://blog.datawrapper.de/weekly-chart-website-colors/
 
