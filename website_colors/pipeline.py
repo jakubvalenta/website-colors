@@ -124,7 +124,7 @@ class CreateChart(luigi.Task):
 
 
 class CreateCharts(luigi.Task):
-    base_url = luigi.Parameter(default='http://api.datawrapper.local')
+    base_url = luigi.Parameter(default='https://api.datawrapper.de')
     auth_token = luigi.Parameter(default='')
     verbose = luigi.BoolParameter(default=False)
 
