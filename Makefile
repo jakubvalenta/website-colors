@@ -2,7 +2,7 @@ _python_pkg = website_colors
 _executable = website-colors
 _executable_clean = website-colors-clean
 
-.PHONY: run clean clean-analysis clean-joined setup setup-dev test lint tox reformat help
+.PHONY: run clean setup setup-dev test lint tox reformat help
 
 run:  ## Run the pipeline
 	"./$(_executable)" --verbose $(args) --workers 2
