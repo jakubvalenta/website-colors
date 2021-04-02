@@ -83,20 +83,20 @@ $ make setup
 ### Installation
 
 ``` shell
-make setup-dev
+$ make setup-dev
 ```
 
 ### Testing and linting
 
 ``` shell
-make test
-make lint
+$ make test
+$ make lint
 ```
 
 ### Help
 
 ``` shell
-make help
+$ make help
 ```
 
 ## Contributing
