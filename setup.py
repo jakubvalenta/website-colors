@@ -6,7 +6,7 @@ from website_colors import __title__
 
 setup(
     name='website-colors',
-    version='0.1.0',
+    version='0.1.1',
     description=__title__,
     long_description=(Path(__file__).parent / 'README.md').read_text(),
     url='https://www.github.com/jakubvalenta/website-colors',
